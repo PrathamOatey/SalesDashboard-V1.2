@@ -2020,11 +2020,22 @@ def render_quick_actions_section(my_leads: pd.DataFrame, salesperson_name: str) 
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        if st.button("📞 Today's Follow-ups", use_container_width=True):
+     if st.button("📞 Today's Follow-ups", use_container_width=True):
             today = datetime.now().date()
-            follow_ups = my_leads[
-                pd.to_datetime(my_leads.get('follow_up_date', ''), errors='coerce').dt.date == today
-            ]
+
+            # --- START OF REPLACEMENT LOGIC ---
+
+            # Convert follow_up_date column to datetime objects, turning errors into NaT (Not a Time)
+            # This provides a default empty Series if the column doesn't exist
+            follow_up_dts = pd.to_datetime(my_leads.get('follow_up_date', pd.Series(dtype='datetime64[ns]')), errors='coerce')
+
+            # Create a mask that handles missing dates safely.
+            # It checks for valid dates first (notna()), then compares them to today.
+            mask = (follow_up_dts.notna()) & (follow_up_dts.dt.date == today)
+            
+            follow_ups = my_leads[mask]
+
+            # --- END OF REPLACEMENT LOGIC ---
             
             if not follow_ups.empty:
                 st.success(f"📅 You have {len(follow_ups)} follow-ups scheduled for today:")
