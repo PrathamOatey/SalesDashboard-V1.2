@@ -739,19 +739,28 @@ def initialize_from_source() -> pd.DataFrame:
 def load_data_safely() -> pd.DataFrame:
     """Enhanced data loading with caching and validation."""
     try:
-        # Try cached data first
+     # Try cached data first
         if Config.file_exists(Config.DATA_FILE):
             file_hash = get_file_hash(Config.DATA_FILE)
             df = load_cached_data(Config.DATA_FILE, file_hash)
-            
-            # Validate loaded data
+
+            # --- START OF REPLACEMENT LOGIC ---
+
+            # If loaded from the main data file, still perform a quick cleanup for safety.
+            # This handles cases where the file might be manually edited or corrupted.
+            if 'po_value_expected' in df.columns:
+                # This line converts any invalid/null values to NaN, then fills NaN with 0.
+                df['po_value_expected'] = pd.to_numeric(df['po_value_expected'], errors='coerce').fillna(0)
+
+            # Re-validate the DataFrame after the quick cleanup
             is_valid, errors = validate_dataframe(df)
             if is_valid:
-                logger.info(f"Loaded {len(df)} records from cache")
+                logger.info(f"Loaded and cleaned {len(df)} records from data file")
                 return df
             else:
-                logger.warning(f"Cached data validation failed: {errors}")
-        
+                logger.warning(f"Data file validation failed even after cleaning: {errors}")
+
+            # --- END OF REPLACEMENT LOGIC ---
         # Fallback to source initialization
         if Config.file_exists(Config.SOURCE_FILE):
             logger.info("Initializing from source file")
