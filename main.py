@@ -967,7 +967,7 @@ def render_kpi_cards(metrics: Dict[str, any]) -> None:
             <div class="kpi-label">📈 Success Rate</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-value">₹{metrics['total_po_value']:<, .0f}</div>
+            <div class="kpi-value">₹{metrics['total_po_value']:,.0f}</div>
             <div class="kpi-label">💰 Total PO Value</div>
         </div>
     </div>
