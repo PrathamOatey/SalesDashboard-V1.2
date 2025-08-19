@@ -6,3 +6,4 @@ google-generativeai
 gspread
 gspread-dataframe
 google-auth-oauthlib
+plotly.express
